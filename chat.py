@@ -3,8 +3,15 @@ from telegram import Update
 from telegram.ext import ContextTypes, ApplicationHandlerStop
 from openai import AsyncOpenAI
 
-# Initialize the OpenAI client using the token from Railway's variables
-client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+import os
+from openai import AsyncOpenAI
+
+api_key = os.getenv("OPENAI_API_KEY")
+
+if not api_key:
+    raise ValueError("OPENAI_API_KEY is not set")
+
+client = AsyncOpenAI(api_key=api_key)
 
 async def conversational_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_message = update.message.text
