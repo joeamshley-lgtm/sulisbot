@@ -44,4 +44,12 @@ def run_health_server():
     server.serve_forever()
 
 threading.Thread(target=run_health_server).start()
-app.run_polling()
+print("=== BOT INITIALIZING ===")
+
+app = ApplicationBuilder().token(TOKEN).build()
+
+print("=== STARTING POLLING ===")
+
+app.run_polling(drop_pending_updates=True)
+
+print("=== THIS SHOULD NEVER PRINT ===")
