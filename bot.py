@@ -3,7 +3,11 @@ import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+# In bot.py, ensure you have this import:
+from chat import conversational_chat
 
+# And ensure it is in Group 4 in your handlers:
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, conversational_chat), group=4)
 # Your custom module imports
 from config import TOKEN
 from games import synonym, literature, psych, check_answer
