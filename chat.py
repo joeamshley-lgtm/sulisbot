@@ -1,41 +1,43 @@
 import os
 from telegram import Update
 from telegram.ext import ContextTypes, ApplicationHandlerStop
-from google import genai
+import google.generativeai as genai
 
-def get_client():
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        print("⚠ GEMINI_API_KEY missing")
-        return None
-    return genai.Client(api_key=api_key)
+# Connect to Gemini using your Railway variable
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
+# Set up the AI model's academic persona
+system_instruction = (
+    "You are an elite academic assistant specializing in English literature, "
+    "psychoanalytic theory, and Factual Reading. You help university students "
+    "analyze texts, draft journal articles, and debate complex themes like "
+    "structural fragmentation and Winnicott's True vs. False Self. Keep your answers "
+    "insightful, well-structured, and academic, but conversational."
+)
+
+# --- 1. INITIALIZE THE MODEL HERE (Outside the function) ---
+model = genai.GenerativeModel(
+    model_name='gemini-2.5-flash',
+    system_instruction=system_instruction
+)
 
 async def conversational_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_message = update.message.text
-
-    await context.bot.send_chat_action(
-        chat_id=update.effective_chat.id,
-        action="typing"
-    )
-
-    client = get_client()
-
-    if client is None:
-        await update.message.reply_text("⚠ Gemini API key not configured.")
-        raise ApplicationHandlerStop()
-
+    
+    # Send a "typing..." action to Telegram
+    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
+    
     try:
-        response = client.models.generate_content(
-            model="gemini-1.5-flash",
-            contents=user_message,
-        )
-
+        # --- 2. GENERATE THE RESPONSE HERE (Inside the function) ---
+        response = await model.generate_content_async(contents=user_message)
+        
+        # Send the text back to the user
         await update.message.reply_text(response.text)
-
+        
+        # Stop the message from hitting the auto-translator
         raise ApplicationHandlerStop()
-
+        
     except Exception as e:
-        print("Gemini Error:", e)
-        await update.message.reply_text("⚠ Gemini is not responding right now.")
+        await update.message.reply_text("I'm having a little trouble connecting to my academic database right now. Please try again in a moment!")
+        print(f"Gemini Error: {e}")
         raise ApplicationHandlerStop()
