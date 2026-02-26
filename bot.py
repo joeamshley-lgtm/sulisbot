@@ -48,6 +48,13 @@ print("=== BOT INITIALIZING ===")
 
 app = ApplicationBuilder().token(TOKEN).build()
 
+from telegram.ext import CommandHandler
+
+async def start(update, context):
+    await update.message.reply_text("Bot is alive!")
+
+app.add_handler(CommandHandler("start", start))
+
 print("=== STARTING POLLING ===")
 
 app.run_polling(drop_pending_updates=True)
