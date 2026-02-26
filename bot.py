@@ -38,6 +38,19 @@ def run_health_server():
 
 threading.Thread(target=run_health_server, daemon=True).start()
 
+async def start(update, context):
+    await update.message.reply_text("👋 Welcome to RigenSulisbot! Type /help to see all commands.")
+app.add_handler(CommandHandler("start", start))
+
+async def help_command(update, context):
+    await update.message.reply_text("📖 Commands: /translate /synonym /literature /psych /ielts /profile /leaderboard")
+app.add_handler(CommandHandler("help", help_command))
+
+async def welcome(update, context):
+    for member in update.message.new_chat_members:
+        await update.message.reply_text(f"👋 Welcome {member.first_name}! Type /help to start learning!")
+app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome))
+
 print("=== BOT INITIALIZING ===")
 
 # Initialize the app ONLY ONCE
