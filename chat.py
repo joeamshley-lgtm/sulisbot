@@ -25,15 +25,18 @@ async def conversational_chat(update: Update, context: ContextTypes.DEFAULT_TYPE
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
     
     try:
-        # 3. Generate the response using the new syntax
+      # 3. Generate the response using the new syntax
         response = await client.models.generate_content(
             model='gemini-2.5-flash',
             contents=user_message,
             config=config
         )
         
-        # Send the text back to the user
-        await update.message.reply_text(response.text)
+        # Telegram has a 4096 character limit per message.
+        # We split the AI's long response into chunks of 4000 characters to be safe.
+        ai_reply = response.text
+        for i in range(0, len(ai_reply), 4000):
+            await update.message.reply_text(ai_reply[i:i+4000])
         
         # Stop the message from hitting the auto-translator
         raise ApplicationHandlerStop()
