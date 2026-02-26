@@ -1,3 +1,6 @@
+import os
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
 from config import TOKEN
 from games import synonym, literature, psych, check_answer
@@ -28,4 +31,17 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, check_answer))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, filter_bad_words))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, spam_control))
 
+# --- Railway Health Server ---
+class HealthHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Bot is running")
+
+def run_health_server():
+    port = int(os.environ.get("PORT", 8080))
+    server = HTTPServer(("0.0.0.0", port), HealthHandler)
+    server.serve_forever()
+
+threading.Thread(target=run_health_server).start()
 app.run_polling()
