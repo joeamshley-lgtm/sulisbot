@@ -2,45 +2,53 @@ import os
 from telegram import Update
 from telegram.ext import ContextTypes, ApplicationHandlerStop
 from openai import AsyncOpenAI
-import os
-print("ENV KEY:", os.environ.get("OPENAI_API_KEY"))
-import os
-from openai import AsyncOpenAI
 
-api_key = os.getenv("OPENAI_API_KEY")
 
-if not api_key:
-    raise ValueError("OPENAI_API_KEY is not set")
+def get_client():
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        print("⚠ OPENAI_API_KEY is missing")
+        return None
+    return AsyncOpenAI(api_key=api_key)
 
-client = AsyncOpenAI(api_key=api_key)
 
 async def conversational_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_message = update.message.text
-    
-    # We send a "typing..." action so the user knows the bot is thinking
-    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
-    
+
+    await context.bot.send_chat_action(
+        chat_id=update.effective_chat.id,
+        action="typing"
+    )
+
+    client = get_client()
+
+    if client is None:
+        await update.message.reply_text(
+            "⚠ OpenAI API key is not configured properly."
+        )
+        raise ApplicationHandlerStop()
+
     try:
-        # Send the message to OpenAI
         response = await client.chat.completions.create(
-            model="gpt-3.5-turbo", # You can change this to gpt-4o-mini if you prefer
+            model="gpt-4o-mini",  # better & cheaper than 3.5
             messages=[
-                {"role": "system", "content": "You are an elite academic assistant specializing in literary analysis, psychoanalytic theory, and Factual Reading. You help university students analyze texts, draft journal articles, and debate complex themes like the True vs. False Self. Keep your answers insightful, well-structured, and academic, but conversational."},
+                {
+                    "role": "system",
+                    "content": "You are an elite academic assistant specializing in literary analysis, psychoanalytic theory, and Factual Reading."
+                },
                 {"role": "user", "content": user_message}
             ],
-            max_tokens=300 # Keeps responses from getting too long
+            max_tokens=300
         )
-        
-        # Extract the text from OpenAI's response
+
         ai_reply = response.choices[0].message.content
-        
-        # Send the reply back to Telegram
         await update.message.reply_text(ai_reply)
-        
-        # Stop the message from continuing to the auto-translator
+
         raise ApplicationHandlerStop()
-        
+
     except Exception as e:
-        await update.message.reply_text("I'm having a little trouble connecting to my academic database right now. Please try again in a moment!")
-        print(f"OpenAI Error: {e}")
+        print("OpenAI Error:", e)
+        await update.message.reply_text(
+            "⚠ I'm having trouble connecting to OpenAI right now."
+        )
         raise ApplicationHandlerStop()
