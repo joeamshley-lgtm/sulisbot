@@ -18,6 +18,7 @@ from translation import auto_translate
 from management import filter_bad_words, spam_control
 from database import get_profile
 from chat import conversational_chat
+from admin_panel import register_admin_panel
 
 
 # =========================
@@ -126,6 +127,8 @@ app.add_handler(
     MessageHandler(filters.TEXT & ~filters.COMMAND, conversational_chat),
     group=5
 )
+
+register_admin_panel(app)
 
 print("=== STARTING POLLING ===")
 app.run_polling(drop_pending_updates=True)
