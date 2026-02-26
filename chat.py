@@ -2,7 +2,8 @@ import os
 from telegram import Update
 from telegram.ext import ContextTypes, ApplicationHandlerStop
 from openai import AsyncOpenAI
-
+import os
+print("ENV KEY:", os.environ.get("OPENAI_API_KEY"))
 import os
 from openai import AsyncOpenAI
 
