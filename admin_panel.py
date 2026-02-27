@@ -60,11 +60,19 @@ async def settings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     member = await context.bot.get_chat_member(chat.id, user.id)
 
-    await update.message.reply_text(
-        f"Your Telegram status in this group is: {member.status}"
-    )
+    if member.status not in ["administrator", "creator"]:
+        await update.message.reply_text("Only group admins can access settings.")
+        return
 
-    return
+    initialize_group_settings(chat.id)
+
+    text, markup = build_panel(chat.id)
+
+    await update.message.reply_text(
+        text,
+        reply_markup=markup,
+        parse_mode="Markdown"
+    )
         
 
     initialize_group_settings(chat.id)
