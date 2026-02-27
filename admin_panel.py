@@ -58,13 +58,13 @@ async def settings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("This command only works inside groups.")
         return
 
-member = await context.bot.get_chat_member(chat.id, user.id)
+    member = await context.bot.get_chat_member(chat.id, user.id)
 
-await update.message.reply_text(
-    f"Your Telegram status in this group is: {member.status}"
-)
+    await update.message.reply_text(
+        f"Your Telegram status in this group is: {member.status}"
+    )
 
-return
+    return
         
 
     initialize_group_settings(chat.id)
